@@ -1,0 +1,6 @@
+@Pr0t0k07.APIsurdORM_HostAddress = http://localhost:5014
+
+GET {{Pr0t0k07.APIsurdORM_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
