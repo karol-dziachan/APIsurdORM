@@ -7,6 +7,7 @@ namespace Pr0t0k07.APIsurdORM.Templates.Interfaces
     {
         Task<int> Add(T entity);
         Task<IEnumerable<T>> GetAll();
+        Task<IEnumerable<T>> GetByParameters(Dictionary<string, string> parameters);
         Task<T> GetById(int id);
         Task<int> Delete(int id);
         Task<int> Update(T entity, int id);
