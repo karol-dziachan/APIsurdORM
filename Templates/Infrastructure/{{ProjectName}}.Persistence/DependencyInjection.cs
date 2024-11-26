@@ -7,7 +7,6 @@ namespace __ProjectName__.Persistence
     {
         public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
         {
-            
 
             return services;
         }

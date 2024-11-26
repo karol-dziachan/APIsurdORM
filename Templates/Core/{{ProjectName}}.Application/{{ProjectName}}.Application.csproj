@@ -17,14 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MyTasks.Common\{{ProjectName}}.Common.csproj" />
-    <ProjectReference Include="..\MyTasks.Domain\{{ProjectName}}.Domain.csproj" />
+    <ProjectReference Include="..\{{ProjectName}}.Common\{{ProjectName}}.Common.csproj" />
+    <ProjectReference Include="..\{{ProjectName}}.Domain\{{ProjectName}}.Domain.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\{{ProjectName}}.Persistence\{{ProjectName}}.Persistence.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Abstraction\" />
-    <Folder Include="Features\Tasks\Commands\" />
-    <Folder Include="Features\Tasks\Queries\" />
+    <Folder Include="Common\Results\" />
+    <Folder Include="Features\__Entity__\Commands\" />
   </ItemGroup>
 
 </Project>

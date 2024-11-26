@@ -1,5 +1,5 @@
 ﻿using __ProjectName__.Domain.Entities;
-using __ProjectName__.Infrastructure.Extensions;
+using __ProjectName__.Common.Extensions;
 using __ProjectName__.Persistence.Abstractions;
 using System.Linq.Expressions;
 using System.Text;

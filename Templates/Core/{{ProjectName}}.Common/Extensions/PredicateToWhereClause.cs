@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using System.Linq.Expressions;
 
-namespace __ProjectName__.Infrastructure.Extensions
+namespace __ProjectName__.Common.Extensions
 {
     public static class PredicateToWhereClause
     {
