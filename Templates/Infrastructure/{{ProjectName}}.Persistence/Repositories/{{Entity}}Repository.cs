@@ -96,7 +96,7 @@ namespace __ProjectName__.Persistence.Repositories
             }
         }
 
-        public async Task<int> Count(Expression<Func<__Entity__, bool>> predicate)
+        public async Task<int> CountAsync(Expression<Func<__Entity__, bool>> predicate)
         {
             if (predicate == null)
             {
@@ -119,7 +119,7 @@ namespace __ProjectName__.Persistence.Repositories
             }
         }
 
-        public async Task<bool> Exists(Expression<Func<__Entity__, bool>> predicate)
+        public async Task<bool> ExistsAsync(Expression<Func<__Entity__, bool>> predicate)
         {
             if (predicate == null)
             {
@@ -195,7 +195,7 @@ namespace __ProjectName__.Persistence.Repositories
             }
         }
 
-        public async Task<IEnumerable<__Entity__>> GetByParameters(Dictionary<string, string> parameters)
+        public async Task<IEnumerable<__Entity__>> GetByParametersAsync(Dictionary<string, string> parameters)
         {
             if (parameters == null || parameters.Count == 0)
             {

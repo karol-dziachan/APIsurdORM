@@ -14,7 +14,7 @@ namespace __ProjectName__.Application.Features.__Entity__.Queries.IsConcrete__En
 
         public async Task<QueryResult> Handle(IsConcrete__Entity__ExistQuery request, CancellationToken cancellationToken)
         {
-            var isExist = await _repository.Exists(request.Predicate);
+            var isExist = await _repository.ExistsAsync(request.Predicate);
 
             return new QueryResult(true, "Entities retrieved successfully.", isExist);
         }

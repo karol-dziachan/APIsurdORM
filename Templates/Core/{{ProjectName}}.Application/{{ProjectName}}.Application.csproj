@@ -24,8 +24,6 @@
 
   <ItemGroup>
     <Folder Include="Abstraction\" />
-    <Folder Include="Common\Results\" />
-    <Folder Include="Features\__Entity__\Commands\" />
   </ItemGroup>
 
 </Project>

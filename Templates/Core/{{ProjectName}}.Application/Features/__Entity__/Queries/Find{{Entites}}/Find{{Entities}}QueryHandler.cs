@@ -3,25 +3,25 @@ using MediatR;
 
 namespace __ProjectName__.Application.Features.__Entity__.Queries.Find__Entites__
 {
-    internal class Find__Entities__QueryHandler : IRequestHandler<Find__Entities__Query, QueryResult>
-{
-    private readonly I__Entity__Repository _repository;
-
-    public Find__Entities__QueryHandler(I__Entity__Repository repository)
+    public class Find__Entities__QueryHandler : IRequestHandler<Find__Entities__Query, QueryResult>
     {
-        _repository = repository;
-    }
+        private readonly I__Entity__Repository _repository;
 
-    public async Task<QueryResult> Handle(Find__Entities__Query request, CancellationToken cancellationToken)
-    {
-        var entities = await _repository.FindAsync(request.Predicate);
-
-        if (entities == null || !entities.Any())
+        public Find__Entities__QueryHandler(I__Entity__Repository repository)
         {
-            return new QueryResult(false, "No entities found.", null);
+            _repository = repository;
         }
 
-        return new QueryResult(true, "Entities retrieved successfully.", entities);
+        public async Task<QueryResult> Handle(Find__Entities__Query request, CancellationToken cancellationToken)
+        {
+            var entities = await _repository.FindAsync(request.Predicate);
+
+            if (entities == null || !entities.Any())
+            {
+                return new QueryResult(false, "No entities found.", null);
+            }
+
+            return new QueryResult(true, "Entities retrieved successfully.", entities);
+        }
     }
-}
 }

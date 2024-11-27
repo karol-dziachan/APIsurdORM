@@ -1,12 +1,13 @@
-﻿namespace __ProjectName__.Application.Features.__Entity__.Queries.IsConcrete__Entity__Exist
+﻿using __ProjectName__.Application.Common.Abstractions;
+
+namespace __ProjectName__.Application.Features.__Entity__.Queries.IsConcrete__Entity__Exist
 {
-    public class QueryResult
+    internal sealed class QueryResult : BaseResult
     {
-        public bool Success { get; set; }
         public string Message { get; set; }
         public bool Data { get; set; }
 
-        public QueryResult(bool success, string message, bool data)
+        public QueryResult(bool success, string message, bool data) : base(success, message)
         {
             Success = success;
             Message = message;

@@ -1,6 +1,6 @@
 ﻿using __ProjectName__.Application.Common.Abstractions;
 
-namespace __ProjectName__.Application.Features.__Entity__.Queries.GetAll__Entities__
+namespace __ProjectName__.Application.Features.__Entity__.Queries.Get__Entities__ByParameter
 {
     internal sealed class QueryResult : BaseResult
     {
@@ -8,6 +8,8 @@ namespace __ProjectName__.Application.Features.__Entity__.Queries.GetAll__Entiti
 
         public QueryResult(bool success, string message, IEnumerable<Domain.Entities.__Entity__> data) : base(success, message)
         {
+            Success = success;
+            Message = message;
             Data = data;
         }
     }
