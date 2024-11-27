@@ -3,7 +3,7 @@ using MediatR;
 
 namespace __ProjectName__.Application.Features.__Entity__.Commands.Remove__Entity__
 {
-    internal class Remove__Entity__CommandHandler : IRequestHandler<Remove__Entity__Command, CommandResult>
+    public class Remove__Entity__CommandHandler : IRequestHandler<Remove__Entity__Command, CommandResult>
     {
         private readonly I__Entity__Repository _repository;
 
@@ -15,7 +15,7 @@ namespace __ProjectName__.Application.Features.__Entity__.Commands.Remove__Entit
         public async Task<CommandResult> Handle(Remove__Entity__Command request, CancellationToken cancellationToken)
         {
             var result = await _repository.RemoveAsync(request.Id);
-            if (result == Guid.Empty)
+            if (result != Guid.Empty)
             {
                 return new CommandResult(true, "Entity removed successfully.", result);
             }

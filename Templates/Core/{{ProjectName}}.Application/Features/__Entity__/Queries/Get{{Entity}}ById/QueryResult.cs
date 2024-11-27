@@ -2,7 +2,7 @@
 
 namespace __ProjectName__.Application.Features.__Entity__.Queries.Get__Entity__ById
 {
-    internal sealed class QueryResult : BaseResult
+    public sealed class QueryResult : BaseResult
     {
         public Domain.Entities.__Entity__ Data { get; set; }
 

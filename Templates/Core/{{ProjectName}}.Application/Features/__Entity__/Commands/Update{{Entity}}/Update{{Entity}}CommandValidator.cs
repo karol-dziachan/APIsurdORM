@@ -2,7 +2,7 @@
 
 namespace __ProjectName__.Application.Features.__Entity__.Commands.Update__Entity__
 {
-    internal class Update__Entity__CommandValidator : AbstractValidator<Update__Entity__Command>
+    public class Update__Entity__CommandValidator : AbstractValidator<Update__Entity__Command>
     {
         public Update__Entity__CommandValidator()
         {

@@ -31,13 +31,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\MyTasks.Application\{{ProjectName}}.Application.csproj" />
     <ProjectReference Include="..\..\Core\{{ProjectName}}.Application\{{ProjectName}}.Application.csproj" />
+    <ProjectReference Include="..\..\Core\{{ProjectName}}.Common\{{ProjectName}}.Common.csproj" />
+    <ProjectReference Include="..\..\Core\{{ProjectName}}.Domain\{{ProjectName}}.Domain.csproj" />
     <ProjectReference Include="..\..\Infrastructure\MyTasks.Infrastructure\{{ProjectName}}.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Infrastructure\MyTasks.Persistence\{{ProjectName}}.Persistence.csproj" />
     <ProjectReference Include="..\..\Infrastructure\{{ProjectName}}.Infrastructure\{{ProjectName}}.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Infrastructure\{{ProjectName}}.Persistence\{{ProjectName}}.Persistence.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

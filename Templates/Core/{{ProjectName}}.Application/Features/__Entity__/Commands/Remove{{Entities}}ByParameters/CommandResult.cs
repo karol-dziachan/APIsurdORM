@@ -2,7 +2,7 @@
 
 namespace __ProjectName__.Application.Features.__Entity__.Commands.Remove__Entities__ByParameters
 {
-    internal sealed class CommandResult : BaseResult
+    public sealed class CommandResult : BaseResult
     {
         public int AffectedRows { get; set; }
 

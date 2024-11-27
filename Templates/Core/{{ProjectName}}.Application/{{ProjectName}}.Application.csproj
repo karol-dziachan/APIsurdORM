@@ -22,8 +22,4 @@
     <ProjectReference Include="..\..\Infrastructure\{{ProjectName}}.Persistence\{{ProjectName}}.Persistence.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Abstraction\" />
-  </ItemGroup>
-
 </Project>

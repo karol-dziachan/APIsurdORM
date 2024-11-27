@@ -2,7 +2,7 @@
 
 namespace __ProjectName__.Application.Features.__Entity__.Commands.Remove__Entities__ByParameters
 {
-    internal class Remove__Entities__ByParametersCommand : IRequest<CommandResult>
+    public class Remove__Entities__ByParametersCommand : IRequest<CommandResult>
     {
         public Dictionary<string, string> Parameters { get; set; }
 

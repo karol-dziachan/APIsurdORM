@@ -283,7 +283,7 @@ namespace __ProjectName__.Persistence.Repositories
             }
         }
 
-        public async Task<int> UpdateAsync(__Entity__ entity)
+        public async Task<int> UpdateAsync(__Entity__ entity, Guid id)
         {
             if (entity == null)
             {
@@ -310,9 +310,9 @@ namespace __ProjectName__.Persistence.Repositories
             var sql = $@"
                     UPDATE [dbo].__Entity__
                     SET {setClause}
-                    WHERE __PRIMARY_KEY__ = @__PRIMARY_KEY__;";
+                    WHERE __PRIMARY_KEY__ = @Id;";
 
-            parameters.Add("@__PRIMARY_KEY__", entity.__PRIMARY_KEY__);
+            parameters.Add("@Id", id);
 
             using (var connection = new SqlConnection(_connectionString))
             {

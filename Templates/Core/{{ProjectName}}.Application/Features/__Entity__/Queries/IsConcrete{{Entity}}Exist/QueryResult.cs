@@ -2,7 +2,7 @@
 
 namespace __ProjectName__.Application.Features.__Entity__.Queries.IsConcrete__Entity__Exist
 {
-    internal sealed class QueryResult : BaseResult
+    public sealed class QueryResult : BaseResult
     {
         public string Message { get; set; }
         public bool Data { get; set; }

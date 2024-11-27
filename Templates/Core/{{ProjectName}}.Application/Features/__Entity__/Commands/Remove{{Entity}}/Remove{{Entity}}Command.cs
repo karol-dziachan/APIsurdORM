@@ -2,7 +2,7 @@
 
 namespace __ProjectName__.Application.Features.__Entity__.Commands.Remove__Entity__
 {
-    internal class Remove__Entity__Command : IRequest<CommandResult>
+    public class Remove__Entity__Command : IRequest<CommandResult>
     {
         public Guid Id { get; set; }
 

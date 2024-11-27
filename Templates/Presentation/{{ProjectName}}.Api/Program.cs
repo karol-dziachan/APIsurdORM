@@ -54,9 +54,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.ConfigureMiddlewares();
+
 app.UseSession();
 app.UseHttpsRedirection();
-    ;
 app.UseAuthentication();
 app.UseAuthorization();
 

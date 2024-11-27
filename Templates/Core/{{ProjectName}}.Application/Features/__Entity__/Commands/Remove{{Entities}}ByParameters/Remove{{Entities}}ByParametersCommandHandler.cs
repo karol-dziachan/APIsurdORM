@@ -3,7 +3,7 @@ using MediatR;
 
 namespace __ProjectName__.Application.Features.__Entity__.Commands.Remove__Entities__ByParameters
 {
-    internal class Remove__Entities__ByParametersCommandHandler : IRequestHandler<Remove__Entities__ByParametersCommand, CommandResult>
+    public class Remove__Entities__ByParametersCommandHandler : IRequestHandler<Remove__Entities__ByParametersCommand, CommandResult>
     {
         private readonly I__Entity__Repository _repository;
 

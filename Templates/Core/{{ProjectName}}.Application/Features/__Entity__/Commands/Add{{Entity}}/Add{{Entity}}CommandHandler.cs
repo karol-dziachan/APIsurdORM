@@ -3,7 +3,7 @@ using MediatR;
 
 namespace __ProjectName__.Application.Features.__Entity__.Commands.Add__Entity__
 {
-    internal class Add__Entity__CommandHandler : IRequestHandler<Add__Entity__Command, CommandResult>
+    public class Add__Entity__CommandHandler : IRequestHandler<Add__Entity__Command, CommandResult>
     {
         private readonly I__Entity__Repository _repository;
 

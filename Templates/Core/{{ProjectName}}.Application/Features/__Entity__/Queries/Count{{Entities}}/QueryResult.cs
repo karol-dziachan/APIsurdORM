@@ -2,7 +2,7 @@
 
 namespace __ProjectName__.Application.Features.__Entity__.Queries.Count__Entities__
 {
-    internal sealed class QueryResult : BaseResult
+    public sealed class QueryResult : BaseResult
     {
         public int Data { get; set; }
 
