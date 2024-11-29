@@ -1,25 +1,9 @@
-var builder = WebApplication.CreateBuilder(args);
+using Pr0t0k07.APIsurdORM.Application.Workers;
+using Pr0t0k07.APIsurdORM.Infrastructure.Shared.Services;
 
-// Add services to the container.
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+var generator = new GenerateApplication(null, 
+    new FileService(null)) ;
 
-var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+await generator.Handle();

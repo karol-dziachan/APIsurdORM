@@ -7,7 +7,7 @@ namespace __ProjectName__.Persistence
     {
         public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
         {
-
+            //TODO: inject repositories
             return services;
         }
     }
