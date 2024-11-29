@@ -54,47 +54,56 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
         private async Task PrepareTemplatesFile(DirectoryContentModel templates, DirectoryContentModel entities)
         {
-            var entityNames = entities.Files.Select(GetFileNameFromPath);
+            var entityNames = entities.Files.Select(GetFileNameFromPath).ToList();
 
-            /*
-                Replaced project name
-             */
-            templates.Directories = templates.Directories.Select(x => x.Replace(ReplacePatterns.ProjectNamePattern, __PROJECT_NAME__)).ToList();
-            templates.Files = templates.Files.Select(x => x.Replace(ReplacePatterns.ProjectNamePattern, __PROJECT_NAME__)).ToList();
+            ReplaceProjectNameInFilePaths(templates);
 
-            /*
-                Replaced {{entity}} in directories
-             */
-            var entitiesDir = templates.Directories.Where(x => x.Contains(ReplacePatterns.EntityPattern));
-            templates.Directories = templates.Directories.Where(x => !x.Contains(ReplacePatterns.EntityPattern)).ToList();
-
-            var replacedDirs = entitiesDir.SelectMany(dir => entityNames.Select(entityName => dir.Replace(ReplacePatterns.EntityPattern, entityName)));
-            templates.Directories = templates.Directories.Concat(replacedDirs).ToList();
-
-
-            /*
-                Replaced {{entity}} in files
-             */
-            var entitiesFile = templates.Files.Where(x => x.Contains(ReplacePatterns.EntityPattern));
-            templates.Files = templates.Files.Where(x => !x.Contains(ReplacePatterns.EntityPattern)).ToList();
-
-            var replacedfiles = entitiesFile.SelectMany(dir => entityNames.Select(entityName => dir.Replace(ReplacePatterns.EntityPattern, entityName)));
-            templates.Files = templates.Files.Concat(replacedfiles).ToList();
-
-
-            /*
-             * Replaced path to dest
-             * 
-            */
+            ReplaceEntityNameInFilePaths(templates, entityNames);
+            
+            ReplacesDestinationPath(templates);
 
             templates.Directories = templates.Directories.Select(x => x.Replace(TEMPLATES_PATH, DESTINATION_PATH)).ToList();
             templates.Files = templates.Files.Select(x => x.Replace(TEMPLATES_PATH, DESTINATION_PATH)).ToList();
 
             _fileService.CreateDirectories(templates.Directories);
             _fileService.CreateFiles(templates.Files);
+        }
 
+        private void ReplaceProjectNameInFilePaths(DirectoryContentModel templates)
+        {
+            ReplaceInList(templates.Directories, ReplacePatterns.ProjectNamePattern, __PROJECT_NAME__);
+            ReplaceInList(templates.Files, ReplacePatterns.ProjectNamePattern, __PROJECT_NAME__);
+        }        
+        
+        private void ReplacesDestinationPath(DirectoryContentModel templates)
+        {
+            ReplaceInList(templates.Directories, TEMPLATES_PATH, DESTINATION_PATH);
+            ReplaceInList(templates.Files, TEMPLATES_PATH, DESTINATION_PATH);
+        }
 
-            Console.WriteLine("Debuig");
+        private void ReplaceEntityNameInFilePaths(DirectoryContentModel templates, List<string> entityNames)
+        {
+            ReplaceInListAFewValues(templates.Directories, ReplacePatterns.EntityPattern, entityNames);
+            ReplaceInListAFewValues(templates.Files, ReplacePatterns.EntityPattern, entityNames);
+        }
+
+        private static void ReplaceInListAFewValues(List<string> toReplaceList, string replacePattern, List<string> newValues)
+        {
+            var itemsWhichContainsPattern = toReplaceList.Where(x => x.Contains(replacePattern));
+            var tempList = toReplaceList.Where(x => !x.Contains(replacePattern)).ToList();
+
+            var replacedItems = itemsWhichContainsPattern.SelectMany(dir => newValues.Select(newVal => dir.Replace(replacePattern, newVal)));
+            tempList = tempList.Concat(replacedItems).ToList();
+
+            toReplaceList.Clear();
+            toReplaceList.AddRange(tempList);
+        }
+
+        private static void ReplaceInList(List<string> toReplaceList, string replacePattern, string newValue)
+        {
+            var tempList = toReplaceList.Select(x => x.Replace(replacePattern, newValue)).ToList();
+            toReplaceList.Clear();
+            toReplaceList.AddRange(tempList);
         }
 
         private string GetFileNameFromPath(string filePath)
