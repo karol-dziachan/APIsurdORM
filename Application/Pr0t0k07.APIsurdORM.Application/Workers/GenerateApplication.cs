@@ -34,11 +34,9 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
                 var templates = _fileService.GetDirectoryResources(TEMPLATES_PATH, new List<string>() { @"\bin", @"\obj" });
                 var entities = _fileService.GetDirectoryResources(ENTITIES_DIR_PATH, new List<string>() { @"\bin", @"\obj" });
 
-                await PrepareTemplatesFile(templates, entities);
-
                 _logger.LogInformation("Succesfully get the templates.");
 
-                //_fileService.CreateDirectories(templates.Directories);
+                await PrepareTemplatesFile(templates, entities);
 
                 _logger.LogInformation("Succesfully creating the templates.");
 
@@ -61,9 +59,6 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
             ReplaceEntityNameInFilePaths(templates, entityNames);
             
             ReplacesDestinationPath(templates);
-
-            templates.Directories = templates.Directories.Select(x => x.Replace(TEMPLATES_PATH, DESTINATION_PATH)).ToList();
-            templates.Files = templates.Files.Select(x => x.Replace(TEMPLATES_PATH, DESTINATION_PATH)).ToList();
 
             _fileService.CreateDirectories(templates.Directories);
             _fileService.CreateFiles(templates.Files);
@@ -89,11 +84,11 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
         private static void ReplaceInListAFewValues(List<string> toReplaceList, string replacePattern, List<string> newValues)
         {
-            var itemsWhichContainsPattern = toReplaceList.Where(x => x.Contains(replacePattern));
-            var tempList = toReplaceList.Where(x => !x.Contains(replacePattern)).ToList();
+            var itemsWhichContainsPattern = toReplaceList.Where(x => x.Contains(replacePattern)); 
+            var tempList = toReplaceList.Where(x => !x.Contains(replacePattern)).ToList(); 
 
-            var replacedItems = itemsWhichContainsPattern.SelectMany(dir => newValues.Select(newVal => dir.Replace(replacePattern, newVal)));
-            tempList = tempList.Concat(replacedItems).ToList();
+            var replacedItems = itemsWhichContainsPattern.SelectMany(dir => newValues.Select(newVal => dir.Replace(replacePattern, newVal))); //n^2
+            tempList = tempList.Concat(replacedItems).ToList(); 
 
             toReplaceList.Clear();
             toReplaceList.AddRange(tempList);
@@ -101,9 +96,10 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
         private static void ReplaceInList(List<string> toReplaceList, string replacePattern, string newValue)
         {
-            var tempList = toReplaceList.Select(x => x.Replace(replacePattern, newValue)).ToList();
-            toReplaceList.Clear();
-            toReplaceList.AddRange(tempList);
+            for (int i = 0; i < toReplaceList.Count; i++)
+            {
+                toReplaceList[i] = toReplaceList[i].Replace(replacePattern, newValue);
+            }
         }
 
         private string GetFileNameFromPath(string filePath)
