@@ -3,6 +3,7 @@
 namespace Pr0t0k07.APIsurdORM.Examples.Entities
 {
     [Entity("RelatedEntity")]
+    [PluralNameEntity("RelatedEntities")]
     public class RelatedEntity
     {
         [PrimaryKey]

@@ -10,6 +10,7 @@ using System;
 using System.Text;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using System.Text.RegularExpressions;
 
 namespace Pr0t0k07.APIsurdORM.Application.Workers
 {
@@ -25,12 +26,19 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
         private readonly ILogger<GenerateApplication> _logger;
         private readonly IFileService _fileService;
         private readonly ISyntaxProvider _syntaxProvider;
+        private Dictionary<string, string> _replaceDict;
 
         public GenerateApplication(ILogger<GenerateApplication> logger, IFileService fileService, ISyntaxProvider syntaxProvider)
         {
             _logger = logger ?? NullLogger<GenerateApplication>.Instance;
             _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
             _syntaxProvider = syntaxProvider ?? throw new ArgumentNullException(nameof(syntaxProvider));
+            _replaceDict = new Dictionary<string, string>()
+            {
+                {"__ProjectName__" , __PROJECT_NAME__ },
+                {"__Entity__" , "" },
+                {"__Entities__" , ""},
+            };
         }
 
         public async Task Handle()
@@ -42,15 +50,18 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
                 var templates = _fileService.GetDirectoryResources(TEMPLATES_PATH, new List<string>() { @"\bin", @"\obj" });
                 var entities = _fileService.GetDirectoryResources(ENTITIES_DIR_PATH, new List<string>() { @"\bin", @"\obj" });
-
+               
                 _logger.LogInformation("Succesfully get the templates.");
 
                 var entitiesClasses = GetListOfEntites(entities.Files);
-                await PrepareTemplatesFile(templates, entities);
+
+                _logger.LogInformation("Succesfully collecting infos about classes.");
+
+                await PrepareTemplatesFile(templates, entities, entitiesClasses);
 
                 _logger.LogInformation("Succesfully creating the templates.");
 
-
+                WriteTemplates(templates.Files, entitiesClasses);
             }
             catch (Exception ex)
             {
@@ -58,6 +69,11 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
                 Rollback();
                 _logger.LogInformation("Rollback was done");
             }
+        }
+
+        private void WriteTemplates(List<string> templatesPath, List<ClassModel> entitiesClasses)
+        {
+
         }
 
         private List<ClassModel> GetListOfEntites(IEnumerable<string> entitesPaths)
@@ -72,13 +88,15 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
             return rst;
         } 
 
-        private async Task PrepareTemplatesFile(DirectoryContentModel templates, DirectoryContentModel entities)
+        private async Task PrepareTemplatesFile(DirectoryContentModel templates, DirectoryContentModel entities, List<ClassModel> entitiesClasses)
         {
             var entityNames = entities.Files.Select(GetFileNameFromPath).ToList();
 
             ReplaceProjectNameInFilePaths(templates);
 
             ReplaceEntityNameInFilePaths(templates, entityNames);
+
+            ReplaceEntitiesNameInFilePaths(templates, entitiesClasses);
             
             ReplacesDestinationPath(templates);
 
@@ -86,6 +104,53 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
             _fileService.CreateFiles(templates.Files);
         }
 
+        //TODO: refactor and split
+        private void ReplaceEntitiesNameInFilePaths(DirectoryContentModel templates, List<ClassModel> entitiesClasses)
+        {
+            for (int i = 0 ; i < templates.Directories.Count; i++)
+            {
+                var temp = templates.Directories[i];
+                if (temp.Contains(ReplacePatterns.EntitiesPattern))
+                {
+                    if(entitiesClasses.Any(entity => temp.Contains($"\\{entity.ClassName}")))
+                    {
+                        var entityClassName = entitiesClasses.Where(entity => temp.Contains($"\\{entity.ClassName}"));
+                        if(entityClassName.Count() > 1)
+                        {
+                            throw new Exception("Wrong definition of entities. Same name in a few entities.");
+                        }
+
+                        var entityPlural = entityClassName.FirstOrDefault().Attributes.FirstOrDefault(x => x.AttributeName == "PluralNameEntity")?.AttributeValues.FirstOrDefault() 
+                            ?? entityClassName.FirstOrDefault().ClassName;
+
+                        //TODO: abstract regex
+                        templates.Directories[i] = temp.Replace(ReplacePatterns.EntitiesPattern, Regex.Replace(entityPlural, @"[^\p{L}-\s]+", ""));
+                    }
+                }
+            }  
+            
+            for (int i = 0 ; i < templates.Files.Count; i++)
+            {
+                var temp = templates.Files[i];
+                if (temp.Contains(ReplacePatterns.EntitiesPattern))
+                {
+                    if (entitiesClasses.Any(entity => temp.Contains($"\\{entity.ClassName}")))
+                    {
+                        var entityClassName = entitiesClasses.Where(entity => temp.Contains($"\\{entity.ClassName}"));
+                        if (entityClassName.Count() > 1)
+                        {
+                            throw new Exception("Wrong definition of entities. Same name in a few entities.");
+                        }
+
+                        var entityPlural = entityClassName.FirstOrDefault().Attributes.FirstOrDefault(x => x.AttributeName == "PluralNameEntity")?.AttributeValues.FirstOrDefault()
+                            ?? entityClassName.FirstOrDefault().ClassName;
+
+                        templates.Files[i] = temp.Replace(ReplacePatterns.EntitiesPattern, Regex.Replace(entityPlural, @"[^\p{L}-\s]+", ""));
+                    }
+                }
+            }
+        }          
+        
         private void ReplaceProjectNameInFilePaths(DirectoryContentModel templates)
         {
             ReplaceInList(templates.Directories, ReplacePatterns.ProjectNamePattern, __PROJECT_NAME__);
