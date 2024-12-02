@@ -3,6 +3,7 @@
 namespace Pr0t0k07.APIsurdORM.Examples.Entities
 {
     [Entity(nameof(TestEntity))]
+    [PluralNameEntity("TestEntities")]
     public class TestEntity
     {
         [PrimaryKey]

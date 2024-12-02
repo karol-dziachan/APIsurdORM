@@ -3,6 +3,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Pr0t0k07.APIsurdORM.Application.Shared.Models;
 using Pr0t0k07.APIsurdORM.Application.Shared;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
+using System;
+using System.Text;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Pr0t0k07.APIsurdORM.Application.Workers
 {
@@ -21,7 +28,7 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
         public GenerateApplication(ILogger<GenerateApplication> logger, IFileService fileService)
         {
             _logger = logger ?? NullLogger<GenerateApplication>.Instance;
-            _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));  
+            _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
         }
 
         public async Task Handle()
@@ -36,18 +43,26 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
                 _logger.LogInformation("Succesfully get the templates.");
 
+                Test();
                 await PrepareTemplatesFile(templates, entities);
 
                 _logger.LogInformation("Succesfully creating the templates.");
 
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError("There was any error durring generate application. Message: {ex}", ex.ToString());
                 Rollback();
                 _logger.LogInformation("Rollback was done");
             }
+        }
+
+        private void Test()
+        {
+            string filePath = "C:\\source\\APIsurdORM\\Examples\\Pr0t0k07.APIsurdORM.Examples\\Entities\\TestEntity.cs";
+
+            
         }
 
         private async Task PrepareTemplatesFile(DirectoryContentModel templates, DirectoryContentModel entities)
