@@ -24,11 +24,13 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
         private readonly ILogger<GenerateApplication> _logger;
         private readonly IFileService _fileService;
+        private readonly ISyntaxProvider _syntaxProvider;
 
-        public GenerateApplication(ILogger<GenerateApplication> logger, IFileService fileService)
+        public GenerateApplication(ILogger<GenerateApplication> logger, IFileService fileService, ISyntaxProvider syntaxProvider)
         {
             _logger = logger ?? NullLogger<GenerateApplication>.Instance;
             _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
+            _syntaxProvider = syntaxProvider ?? throw new ArgumentNullException(nameof(syntaxProvider));
         }
 
         public async Task Handle()
@@ -43,7 +45,7 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
                 _logger.LogInformation("Succesfully get the templates.");
 
-                Test();
+                var entitiesClasses = GetListOfEntites(entities.Files);
                 await PrepareTemplatesFile(templates, entities);
 
                 _logger.LogInformation("Succesfully creating the templates.");
@@ -58,12 +60,17 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
             }
         }
 
-        private void Test()
+        private List<ClassModel> GetListOfEntites(IEnumerable<string> entitesPaths)
         {
-            string filePath = "C:\\source\\APIsurdORM\\Examples\\Pr0t0k07.APIsurdORM.Examples\\Entities\\TestEntity.cs";
+            var rst = new List<ClassModel>();   
 
-            
-        }
+            foreach(var path in entitesPaths)
+            {
+                rst.AddRange(_syntaxProvider.MapSyntaxToClassModel(path).Select(x => x));
+            }
+
+            return rst;
+        } 
 
         private async Task PrepareTemplatesFile(DirectoryContentModel templates, DirectoryContentModel entities)
         {

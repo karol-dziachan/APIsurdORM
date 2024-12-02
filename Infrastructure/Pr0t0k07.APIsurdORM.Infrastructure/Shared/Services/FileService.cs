@@ -104,7 +104,7 @@ namespace Pr0t0k07.APIsurdORM.Infrastructure.Shared.Services
         {
             if (!File.Exists(filePath))
             {
-                \var fStr = File.Create(filePath);
+                var fStr = File.Create(filePath);
                 fStr.Close();
                 _logger.LogInformation("File {filePath} wasn't exists, so the service create it.", filePath);
                 return false;
