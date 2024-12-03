@@ -73,7 +73,57 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
         private void WriteTemplates(List<string> templatesPath, List<ClassModel> entitiesClasses)
         {
+            foreach (var path in templatesPath)
+            { 
+                Dictionary<string, string> replaceDict = new()
+                {
+                    {"__ProjectName__" , __PROJECT_NAME__ },
+                    {"{{ProjectName}}" , __PROJECT_NAME__ },
+                    {"__Entity__" , "" },
+                    {"__Entities__" , ""},
+                };
 
+                Dictionary<string, string> replacePathsDict = new()
+                {
+                    {$"{__PROJECT_NAME__}" , "{{ProjectName}}" },
+                    {"{{Entity}}" , "" },
+                    {"{{Entities}}" , ""},
+                    {DESTINATION_PATH, TEMPLATES_PATH }
+                };
+
+                var entityClassName = entitiesClasses.Where(entity => path.Contains($"{entity.ClassName}")).FirstOrDefault();
+
+                if(entityClassName is not null)
+                {
+                    replaceDict["__Entity__"] = entityClassName.ClassName;
+
+                    replacePathsDict[$"{entityClassName.ClassName}"] = "{{Entity}}";
+
+
+
+                    var entityPlural = entityClassName.Attributes.FirstOrDefault(x => x.AttributeName == "PluralNameEntity")?.AttributeValues.FirstOrDefault()
+                            ?? entityClassName.ClassName;
+
+                    replaceDict["__Entities__"] = Regex.Replace(entityPlural, @"[^\p{L}-\s]+", "");
+                    replacePathsDict[$"{Regex.Replace(entityPlural, @"[^\p{L}-\s]+", "")}"] = "{{Entities}}";
+                }
+
+                var sourceFilePath = path;
+
+                foreach(var replaceItem in replacePathsDict)
+                {
+                    sourceFilePath = sourceFilePath.Replace(replaceItem.Key, replaceItem.Value);
+                }
+
+                var sourceContent = File.ReadAllText(sourceFilePath);
+
+                foreach(var replaceItem in replaceDict) 
+                {
+                    sourceContent = sourceContent.Replace(replaceItem.Key, replaceItem.Value);
+                }
+
+                _fileService.WriteToFile(path, sourceContent);
+            }
         }
 
         private List<ClassModel> GetListOfEntites(IEnumerable<string> entitesPaths)
