@@ -5,7 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>1701;1702;1705;1591</NoWarn>
-    <DocumentationFile>obj\Debug\net6.0\MyTasks.Api.xml</DocumentationFile>
   </PropertyGroup>
 
 
@@ -20,12 +19,9 @@
     <PackageReference Include="Auth0.AspNetCore.Authentication" Version="1.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\MyTasks.Application\{{ProjectName}}.Application.csproj" />
     <ProjectReference Include="..\..\Core\{{ProjectName}}.Application\{{ProjectName}}.Application.csproj" />
     <ProjectReference Include="..\..\Core\{{ProjectName}}.Common\{{ProjectName}}.Common.csproj" />
     <ProjectReference Include="..\..\Core\{{ProjectName}}.Domain\{{ProjectName}}.Domain.csproj" />
-    <ProjectReference Include="..\..\Infrastructure\MyTasks.Infrastructure\{{ProjectName}}.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Infrastructure\MyTasks.Persistence\{{ProjectName}}.Persistence.csproj" />
     <ProjectReference Include="..\..\Infrastructure\{{ProjectName}}.Infrastructure\{{ProjectName}}.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Infrastructure\{{ProjectName}}.Persistence\{{ProjectName}}.Persistence.csproj" />
   </ItemGroup>

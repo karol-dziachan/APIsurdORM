@@ -25,35 +25,10 @@ namespace __ProjectName__.Persistence.Repositories
                 throw new ArgumentNullException(nameof(entity));
             }
 
-            var entityDictionary = entity.ToDictionary();
-
-            var columnNames = new StringBuilder();
-            var parameterNames = new StringBuilder();
-            var parameters = new DynamicParameters();
-
-            foreach (var kvp in entityDictionary)
-            {
-                if (kvp.Key == "Id")
-                {
-                    continue;
-                }
-
-                if (columnNames.Length > 0)
-                {
-                    columnNames.Append(", ");
-                    parameterNames.Append(", ");
-                }
-
-                columnNames.Append(kvp.Key);
-                parameterNames.Append("@").Append(kvp.Key);
-
-                parameters.Add($"@{kvp.Key}", kvp.Value);
-            }
-
             var sql = @$"
-                INSERT INTO [dbo].__Entity__ ({columnNames}) 
+                INSERT INTO [dbo].__Entity__ (__ENTITY_PARAMETERS__)
                 OUTPUT INSERTED.ID 
-                VALUES ({parameterNames});";
+                VALUES (__ENTITY_VALUES__);";
 
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -63,6 +38,10 @@ namespace __ProjectName__.Persistence.Repositories
                 {
                     try
                     {
+                        var parameters = new
+                        {
+                            //__ENTITY_PARAMETERS_MAPPING__
+                        };
                         var insertedId = await connection.ExecuteScalarAsync<Guid>(sql, parameters, transaction: transaction);
                         transaction.Commit(); 
                         return insertedId;
@@ -85,6 +64,7 @@ namespace __ProjectName__.Persistence.Repositories
                 var sql = @"
                     SELECT * 
                     FROM [dbo].__Entity__
+                    __LEFT_JOIN__
                     ORDER BY Id 
                     OFFSET @Offset ROWS
                     FETCH NEXT @PageSize ROWS ONLY;";
@@ -168,7 +148,7 @@ namespace __ProjectName__.Persistence.Repositories
             {
                 await connection.OpenAsync();
 
-                var sql = "SELECT * FROM [dbo].__Entity__";
+                var sql = "SELECT * FROM [dbo].__Entity__ __LEFT_JOIN__";
 
                 var entities = await connection.QueryAsync<__Entity__>(sql);
 
@@ -289,33 +269,20 @@ namespace __ProjectName__.Persistence.Repositories
             {
                 throw new ArgumentNullException(nameof(entity));
             }
-
-            var entityDictionary = entity.ToDictionary();
-
-            var setClauses = new List<string>();
-            var parameters = new DynamicParameters();
-
-            foreach (var kvp in entityDictionary)
-            {
-                if (kvp.Key == "Id") // Nie aktualizujemy Id
-                {
-                    continue;
-                }
-
-                setClauses.Add($"{kvp.Key} = @{kvp.Key}");
-                parameters.Add($"@{kvp.Key}", kvp.Value);
-            }
-
-            var setClause = string.Join(", ", setClauses);
             var sql = $@"
                     UPDATE [dbo].__Entity__
-                    SET {setClause}
+                    SET __SET_PARAMETERS__
                     WHERE __PRIMARY_KEY__ = @Id;";
 
-            parameters.Add("@Id", id);
 
             using (var connection = new SqlConnection(_connectionString))
             {
+                var parameters = new
+                {
+                    Id = id, 
+                    //__ENTITY_PARAMETERS_MAPPING__
+                };
+
                 var rowsAffected = await connection.ExecuteAsync(sql, parameters);
 
                 return rowsAffected;

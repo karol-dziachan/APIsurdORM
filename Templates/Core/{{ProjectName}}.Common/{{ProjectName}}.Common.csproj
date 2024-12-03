@@ -10,8 +10,4 @@
 		<PackageReference Include="Dapper" Version="2.1.35" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\..\..\Infrastructure\Pr0t0k07.APIsurdORM.Infrastructure\Pr0t0k07.APIsurdORM.Infrastructure.csproj" />
-	</ItemGroup>
-
 </Project>

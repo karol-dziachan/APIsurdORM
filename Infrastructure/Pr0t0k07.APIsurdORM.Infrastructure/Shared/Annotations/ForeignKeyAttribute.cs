@@ -3,10 +3,10 @@
     [AttributeUsage(AttributeTargets.Property, Inherited = false)]
     public class ForeignKeyAttribute : Attribute
     {
-        public Type RelatedEntityType { get; }
+        public string RelatedEntityType { get; }
         public string ForeignKey { get; }
 
-        public ForeignKeyAttribute(Type relatedEntityType, string foreignKey)
+        public ForeignKeyAttribute(string relatedEntityType, string foreignKey)
         {
             RelatedEntityType = relatedEntityType;
             ForeignKey = foreignKey;

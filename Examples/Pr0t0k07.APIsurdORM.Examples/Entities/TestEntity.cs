@@ -10,6 +10,7 @@ namespace Pr0t0k07.APIsurdORM.Examples.Entities
         [Unique]
         [ColumnName("Identifier")]
         [RequiredProperty]
+        [AutoNumerated]
         public Guid Id {  get; set; }
 
         [MaxLength(50)]
@@ -20,9 +21,9 @@ namespace Pr0t0k07.APIsurdORM.Examples.Entities
         [RequiredProperty]
         public string LastName { get; set; }
 
-        [ForeignKey(typeof(RelatedEntity), nameof(RelatedEntity.Id))]
+        [ForeignKey("RelatedEntity", "Id")]
         [RequiredProperty]
-        public RelatedEntity RelatedEntity { get; set; }
+        public RelatedEntity RelatedEntityId { get; set; }
 
     }
 }

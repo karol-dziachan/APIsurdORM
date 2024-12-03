@@ -11,6 +11,7 @@ using System.Text;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Pr0t0k07.APIsurdORM.Application.Workers
 {
@@ -61,7 +62,7 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
                 _logger.LogInformation("Succesfully creating the templates.");
 
-                WriteTemplates(templates.Files, entitiesClasses);
+                WriteTemplates(templates.Files, entities.Files, templates.Directories.FirstOrDefault(x => x.Contains(".Domain") && x.EndsWith("\\Entities")), entitiesClasses);
             }
             catch (Exception ex)
             {
@@ -97,17 +98,9 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
             return path;
         }
 
-        private string ReplaceFileContent(string filePath, string entityName, string entityNameInPlural)
+        private string ReplaceFileContent(string filePath, Dictionary<string, string> replaceDict)
         {
             var sourceContent = File.ReadAllText(filePath);
-
-            Dictionary<string, string> replaceDict = new()
-                {
-                    {"__ProjectName__" , __PROJECT_NAME__ },
-                    {"{{ProjectName}}" , __PROJECT_NAME__ },
-                    {"__Entity__" , $"{entityName}" },
-                    {"__Entities__" , $"{entityNameInPlural}"},
-                };
 
             foreach (var replaceItem in replaceDict)
             {
@@ -117,27 +110,63 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
             return sourceContent;
         }
 
-        private void WriteTemplates(List<string> templatesPath, List<ClassModel> entitiesClasses)
+        private void WriteTemplates(List<string> templatesPath, List<string> entitiesPath, string entitiesDir, List<ClassModel> entitiesClasses)
         {
             foreach (var path in templatesPath)
             {
-                string entityName = null; 
-                string entityNameInPlural = null; 
+                Dictionary<string, string> replaceDict = new()
+                {
+                    {"__ProjectName__" , __PROJECT_NAME__ },
+                    {"{{ProjectName}}" , __PROJECT_NAME__ },
+                    {"__Entity__" , $"" },
+                    {"__Entities__" , $""},
+                };
                 var entityClassName = entitiesClasses.Where(entity => path.Contains($"{entity.ClassName}")).FirstOrDefault();
 
                 if(entityClassName is not null)
                 {
-                    entityName = entityClassName.ClassName;
-                    entityNameInPlural = entityClassName.Attributes.FirstOrDefault(x => x.AttributeName == "PluralNameEntity")?.AttributeValues.FirstOrDefault()
-                            ?? entityClassName.ClassName;
+                    var primaryKeyAttr = entityClassName.Properties.FirstOrDefault(x => x.Attributes.Any(y => y.AttributeName == "PrimaryKey")).PropertyName;
 
+                    replaceDict["__Entity__"] = entityClassName.ClassName;
+                    var entityNameInPlural = entityClassName.Attributes.FirstOrDefault(x => x.AttributeName == "PluralNameEntity")?.AttributeValues.FirstOrDefault()
+                            ?? entityClassName.ClassName;
+                    replaceDict["__Entities__"] = Regex.Replace(entityNameInPlural, @"[^\p{L}-\s]+", "");
+
+                    var properties = entityClassName.Properties.Where(x => !x.Attributes.Any(x => x.AttributeName == "AutoNumerated"));
+                    replaceDict.Add("__ENTITY_PARAMETERS__", string.Join(", ", properties.Select(x => x.PropertyName)));
+                    replaceDict.Add("__ENTITY_VALUES__", string.Join(", ", properties.Select(x => $"@{x.PropertyName}")));
+                    
+                    replaceDict.Add("//__ENTITY_PARAMETERS_MAPPING__", string.Join(", ", properties.Select(x => $"{x.PropertyName} = entity.{x.PropertyName}")));
+
+                    var relatedProperties = entityClassName.Properties.Where(x => x.Attributes.Any(x => x.AttributeName == "ForeignKey"));
+                    if (!relatedProperties.Any())
+                    {
+                        replaceDict.Add("__LEFT_JOIN__", String.Empty);
+                    }
+                    else
+                    {
+                        replaceDict.Add("__LEFT_JOIN__", string.Join("\n", relatedProperties.Select(x => $"LEFT JOIN [dbo].[{x.Attributes.First(x => x.AttributeName == "ForeignKey")!.AttributeValues[0].Replace("\"", String.Empty)}] ON [dbo].[{entityClassName.ClassName.Replace("\"", String.Empty)}].{primaryKeyAttr}=[dbo].[{x.Attributes.First(x => x.AttributeName == "ForeignKey")!.AttributeValues[0].Replace("\"", String.Empty)}].{x.Attributes.First(x => x.AttributeName == "ForeignKey")!.AttributeValues[1].Replace("\"", String.Empty)}")));
+                    }
+                    replaceDict.Add("__PRIMARY_KEY__", primaryKeyAttr);
+
+                    replaceDict.Add("__SET_PARAMETERS__", string.Join(", ", properties.Select(x => $"{x.PropertyName} = @{x.PropertyName}")));
                 }
 
-                var sourceFilePath = GetSourceFileFormTemplatePath(path, entityName, string.IsNullOrEmpty(entityNameInPlural) ? null : Regex.Replace(entityNameInPlural, @"[^\p{L}-\s]+", ""));
+                var sourceFilePath = GetSourceFileFormTemplatePath(path, replaceDict["__Entity__"], replaceDict["__Entities__"]);
 
-                var sourceContent = ReplaceFileContent(sourceFilePath, entityName, string.IsNullOrEmpty(entityNameInPlural) ? null : Regex.Replace(entityNameInPlural, @"[^\p{L}-\s]+", ""));
+                var sourceContent = ReplaceFileContent(sourceFilePath, replaceDict);
 
                 _fileService.WriteToFile(path, sourceContent);
+            }
+
+            foreach(var path in entitiesPath)
+            {
+                var destPath = path.Replace(ENTITIES_DIR_PATH, $"{entitiesDir}\\");
+
+                var sourceContennt = File.ReadAllText(path);
+
+                _fileService.EnsureIfFileExists(destPath);
+                _fileService.WriteToFile(destPath, sourceContennt);
             }
         }
 
