@@ -71,56 +71,71 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
             }
         }
 
-        private void WriteTemplates(List<string> templatesPath, List<ClassModel> entitiesClasses)
+        private string GetSourceFileFormTemplatePath(string path, string entityName, string entityNameInPlural)
         {
-            foreach (var path in templatesPath)
-            { 
-                Dictionary<string, string> replaceDict = new()
+            Dictionary<string, string> replacePathsDict = new()
+            {
+                    {$"{__PROJECT_NAME__}" , "{{ProjectName}}" },
+                    {DESTINATION_PATH, TEMPLATES_PATH }
+            };
+
+            if (!string.IsNullOrEmpty(entityName)) 
+            {
+                replacePathsDict.Add($"{entityName}", "{{Entity}}");
+            }
+
+            if (!string.IsNullOrEmpty(entityNameInPlural) && entityName != entityNameInPlural)
+            {
+                replacePathsDict.Add($"{entityNameInPlural}", "{{Entities}}" );
+            }
+
+            foreach (var replaceItem in replacePathsDict)
+            {
+                path = path.Replace(replaceItem.Key, replaceItem.Value);
+            }
+
+            return path;
+        }
+
+        private string ReplaceFileContent(string filePath, string entityName, string entityNameInPlural)
+        {
+            var sourceContent = File.ReadAllText(filePath);
+
+            Dictionary<string, string> replaceDict = new()
                 {
                     {"__ProjectName__" , __PROJECT_NAME__ },
                     {"{{ProjectName}}" , __PROJECT_NAME__ },
-                    {"__Entity__" , "" },
-                    {"__Entities__" , ""},
+                    {"__Entity__" , $"{entityName}" },
+                    {"__Entities__" , $"{entityNameInPlural}"},
                 };
 
-                Dictionary<string, string> replacePathsDict = new()
-                {
-                    {$"{__PROJECT_NAME__}" , "{{ProjectName}}" },
-                    {"{{Entity}}" , "" },
-                    {"{{Entities}}" , ""},
-                    {DESTINATION_PATH, TEMPLATES_PATH }
-                };
+            foreach (var replaceItem in replaceDict)
+            {
+                sourceContent = sourceContent.Replace(replaceItem.Key, replaceItem.Value);
+            }
 
+            return sourceContent;
+        }
+
+        private void WriteTemplates(List<string> templatesPath, List<ClassModel> entitiesClasses)
+        {
+            foreach (var path in templatesPath)
+            {
+                string entityName = null; 
+                string entityNameInPlural = null; 
                 var entityClassName = entitiesClasses.Where(entity => path.Contains($"{entity.ClassName}")).FirstOrDefault();
 
                 if(entityClassName is not null)
                 {
-                    replaceDict["__Entity__"] = entityClassName.ClassName;
-
-                    replacePathsDict[$"{entityClassName.ClassName}"] = "{{Entity}}";
-
-
-
-                    var entityPlural = entityClassName.Attributes.FirstOrDefault(x => x.AttributeName == "PluralNameEntity")?.AttributeValues.FirstOrDefault()
+                    entityName = entityClassName.ClassName;
+                    entityNameInPlural = entityClassName.Attributes.FirstOrDefault(x => x.AttributeName == "PluralNameEntity")?.AttributeValues.FirstOrDefault()
                             ?? entityClassName.ClassName;
 
-                    replaceDict["__Entities__"] = Regex.Replace(entityPlural, @"[^\p{L}-\s]+", "");
-                    replacePathsDict[$"{Regex.Replace(entityPlural, @"[^\p{L}-\s]+", "")}"] = "{{Entities}}";
                 }
 
-                var sourceFilePath = path;
+                var sourceFilePath = GetSourceFileFormTemplatePath(path, entityName, string.IsNullOrEmpty(entityNameInPlural) ? null : Regex.Replace(entityNameInPlural, @"[^\p{L}-\s]+", ""));
 
-                foreach(var replaceItem in replacePathsDict)
-                {
-                    sourceFilePath = sourceFilePath.Replace(replaceItem.Key, replaceItem.Value);
-                }
-
-                var sourceContent = File.ReadAllText(sourceFilePath);
-
-                foreach(var replaceItem in replaceDict) 
-                {
-                    sourceContent = sourceContent.Replace(replaceItem.Key, replaceItem.Value);
-                }
+                var sourceContent = ReplaceFileContent(sourceFilePath, entityName, string.IsNullOrEmpty(entityNameInPlural) ? null : Regex.Replace(entityNameInPlural, @"[^\p{L}-\s]+", ""));
 
                 _fileService.WriteToFile(path, sourceContent);
             }

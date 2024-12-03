@@ -4,7 +4,7 @@ using __ProjectName__.Application.Features.__Entity__.Commands.Remove__Entities_
 using __ProjectName__.Application.Features.__Entity__.Commands.Remove__Entity__;
 using __ProjectName__.Application.Features.__Entity__.Commands.Update__Entity__;
 using __ProjectName__.Application.Features.__Entity__.Queries.Count__Entities__;
-using __ProjectName__.Application.Features.__Entity__.Queries.Find__Entites__;
+using __ProjectName__.Application.Features.__Entity__.Queries.Find__Entities__;
 using __ProjectName__.Application.Features.__Entity__.Queries.Get__Entities__ByParameter;
 using __ProjectName__.Application.Features.__Entity__.Queries.Get__Entity__ById;
 using __ProjectName__.Application.Features.__Entity__.Queries.GetAll__Entity__;
@@ -21,13 +21,13 @@ namespace __ProjectName__.Api.Controllers
     public class __Entity__Controller : BaseController
     {
         /// <summary>
-        ///   Get all __entites__
+        ///   Get all __Entities__
         /// </summary>
-        /// <returns>List of __entities__</returns>
+        /// <returns>List of __Entities__</returns>
         /// <response code="200">If everything is ok</response>
         /// <response code="403">If the user is not authorization</response>
         /// <response code="404">If the book not found</response>
-        [HttpGet("/get-all-__entities__")]
+        [HttpGet("/get-all-__Entities__")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -51,15 +51,15 @@ namespace __ProjectName__.Api.Controllers
         }
 
         /// <summary>
-        ///   Get page with __entites__
+        ///   Get page with __Entities__
         /// </summary>
         /// <param name="pageNumber">Current page number</param>
         /// <param name="pageSize">Current page size</param>
-        /// <returns>List of __entities__</returns>
+        /// <returns>List of __Entities__</returns>
         /// <response code="200">If everything is ok</response>
         /// <response code="403">If the user is not authorization</response>
         /// <response code="404">If the book not found</response>
-        [HttpGet("/get-page-with-__entities__/{pageNumber}/{pageSize}")]
+        [HttpGet("/get-page-with-__Entities__/{pageNumber}/{pageSize}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -83,15 +83,15 @@ namespace __ProjectName__.Api.Controllers
         }
 
         /// <summary>
-        ///   Get a __entity__ by ID
+        ///   Get a __Entity__ by ID
         /// </summary>
-        /// <param name="id">ID of the __entity__</param>
-        /// <returns>The requested __entity__</returns>
+        /// <param name="id">ID of the __Entity__</param>
+        /// <returns>The requested __Entity__</returns>
         /// <response code="200">If everything is ok</response>
         /// <response code="403">If the user is not authorized</response>
         /// <response code="404">If the entity not found</response>
         /// <response code="400">If the request is invalid</response>
-        [HttpGet("/get-__entity__-by-id/{id}")]
+        [HttpGet("/get-__Entity__-by-id/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -115,15 +115,15 @@ namespace __ProjectName__.Api.Controllers
         }
 
         /// <summary>
-        ///   Get __entities__ by parameters
+        ///   Get __Entities__ by parameters
         /// </summary>
         /// <param name="parameters">Dictionary of parameters</param>
-        /// <returns>List of __entities__</returns>
+        /// <returns>List of __Entities__</returns>
         /// <response code="200">If everything is ok</response>
         /// <response code="403">If the user is not authorized</response>
         /// <response code="404">If no entities found</response>
         /// <response code="400">If the request is invalid</response>
-        [HttpGet("/get-__entities__-by-parameters")]
+        [HttpGet("/get-__Entities__-by-parameters")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -147,20 +147,20 @@ namespace __ProjectName__.Api.Controllers
         }
 
         /// <summary>
-        ///   Find __entities__ by parameters
+        ///   Find __Entities__ by parameters
         /// </summary>
         /// <param name="parameter">A parameter for filtering the entities</param>
-        /// <returns>List of __entities__</returns>
+        /// <returns>List of __Entities__</returns>
         /// <response code="200">If everything is ok</response>
         /// <response code="403">If the user is not authorized</response>
         /// <response code="404">If no entities found</response>
         /// <response code="400">If the request is invalid</response>
-        [HttpGet("/find-__entities__-by-parameters")]
+        [HttpGet("/find-__Entities__-by-parameters")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<__ProjectName__.Application.Features.__Entity__.Queries.Find__Entites__.QueryResult>> Find__Entities__ByParameters([FromQuery] string parameters)
+        public async Task<ActionResult<__ProjectName__.Application.Features.__Entity__.Queries.Find__Entities__.QueryResult>> Find__Entities__ByParameters([FromQuery] string parameters)
         {
             var query = new Find__Entities__Query(parameters.BuildPredicate<__Entity__>());
             var response = await Mediator.Send(query);
@@ -179,15 +179,15 @@ namespace __ProjectName__.Api.Controllers
         }
 
         /// <summary>
-        ///   Count the number of __entities__ matching a specific parameter
+        ///   Count the number of __Entities__ matching a specific parameter
         /// </summary>
         /// <param name="parameter">A parameter for filtering the entities</param>
-        /// <returns>Count of matching __entities__</returns>
+        /// <returns>Count of matching __Entities__</returns>
         /// <response code="200">If everything is ok</response>
         /// <response code="403">If the user is not authorized</response>
         /// <response code="404">If no entities found</response>
         /// <response code="400">If the request is invalid</response>
-        [HttpGet("/count-__entities__-by-parameter")]
+        [HttpGet("/count-__Entities__-by-parameter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -211,15 +211,15 @@ namespace __ProjectName__.Api.Controllers
         }
 
         /// <summary>
-        ///   Check if a specific __entity__ exists based on the provided parameter
+        ///   Check if a specific __Entity__ exists based on the provided parameter
         /// </summary>
-        /// <param name="parameter">The parameter to check the existence of the __entity__</param>
+        /// <param name="parameter">The parameter to check the existence of the __Entity__</param>
         /// <returns>True if the entity exists, otherwise false</returns>
         /// <response code="200">If the request is successful and the entity exists or not</response>
         /// <response code="403">If the user is not authorized</response>
         /// <response code="404">If the entity was not found</response>
         /// <response code="400">If the request is invalid</response>
-        [HttpGet("/is-__entity__-exist")]
+        [HttpGet("/is-__Entity__-exist")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -238,14 +238,14 @@ namespace __ProjectName__.Api.Controllers
         }
 
         /// <summary>
-        ///   Add a new __entity__
+        ///   Add a new __Entity__
         /// </summary>
-        /// <param name="command">The command containing the data for the new __entity__</param>
-        /// <returns>The ID of the created __entity__</returns>
+        /// <param name="command">The command containing the data for the new __Entity__</param>
+        /// <returns>The ID of the created __Entity__</returns>
         /// <response code="200">If the entity was successfully added</response>
         /// <response code="400">If the request data is invalid</response>
         /// <response code="403">If the user is not authorized</response>
-        [HttpPost("/add-__entity__")]
+        [HttpPost("/add-__Entity__")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -262,7 +262,7 @@ namespace __ProjectName__.Api.Controllers
         }
 
         /// <summary>
-        ///   Remove __entities__ based on the provided parameters
+        ///   Remove __Entities__ based on the provided parameters
         /// </summary>
         /// <param name="parameters">The parameters used to identify the entities to be removed</param>
         /// <returns>A result indicating whether the entities were successfully removed</returns>
@@ -270,7 +270,7 @@ namespace __ProjectName__.Api.Controllers
         /// <response code="400">If the request data is invalid</response>
         /// <response code="403">If the user is not authorized</response>
         /// <response code="404">If no matching entities were found to remove</response>
-        [HttpDelete("/remove-__entities__-by-parameters")]
+        [HttpDelete("/remove-__Entities__-by-parameters")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -294,7 +294,7 @@ namespace __ProjectName__.Api.Controllers
         }
 
         /// <summary>
-        ///   Remove a specific __entity__ by its ID
+        ///   Remove a specific __Entity__ by its ID
         /// </summary>
         /// <param name="id">The ID of the entity to be removed</param>
         /// <returns>A result indicating whether the entity was successfully removed</returns>
@@ -302,7 +302,7 @@ namespace __ProjectName__.Api.Controllers
         /// <response code="400">If the request data is invalid</response>
         /// <response code="403">If the user is not authorized</response>
         /// <response code="404">If the entity with the given ID was not found</response>
-        [HttpDelete("/remove-__entity__/{id}")]
+        [HttpDelete("/remove-__Entity__/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -326,14 +326,14 @@ namespace __ProjectName__.Api.Controllers
         }
 
         /// <summary>
-        ///   Update a __entity__
+        ///   Update a __Entity__
         /// </summary>
         /// <param name="command">The command containing the data to update</param>
         /// <returns>The result of the update operation</returns>
         /// <response code="200">If the update is successful</response>
         /// <response code="400">If the request is invalid</response>
         /// <response code="404">If the entity to update is not found</response>
-        [HttpPut("/update-__entity__/{id}")]
+        [HttpPut("/update-__Entity__/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using System.Linq.Expressions;
 
-namespace __ProjectName__.Application.Features.__Entity__.Queries.Find__Entites__
+namespace __ProjectName__.Application.Features.__Entity__.Queries.Find__Entities__
 {
     public class Find__Entities__Query : IRequest<QueryResult>
     {

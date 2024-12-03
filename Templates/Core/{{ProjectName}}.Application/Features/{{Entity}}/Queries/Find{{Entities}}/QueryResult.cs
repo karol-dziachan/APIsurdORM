@@ -1,6 +1,6 @@
 ﻿using __ProjectName__.Application.Common.Abstractions;
 
-namespace __ProjectName__.Application.Features.__Entity__.Queries.Find__Entites__
+namespace __ProjectName__.Application.Features.__Entity__.Queries.Find__Entities__
 {
     public sealed class QueryResult : BaseResult
     {
