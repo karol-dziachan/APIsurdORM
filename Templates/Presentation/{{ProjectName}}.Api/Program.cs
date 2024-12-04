@@ -17,13 +17,13 @@ builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddApplication();
 builder.Services.AddPersistence(builder.Configuration);
+builder.Services.AddApplication();
 
 builder.Services.AddSwaggerGen(
-    c =>
+    options =>
     {
-        c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo()
+        options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo()
         {
             Title = "WebApplication",
             Version = "v1",
@@ -41,8 +41,9 @@ builder.Services.AddSwaggerGen(
                 Url = new Uri("https://example.com/license"),
             }
         });
+        options.CustomSchemaIds(type => type.ToString());
         var filePath = Path.Combine(AppContext.BaseDirectory, "{{ProjectName}}.Api.xml");
-        c.IncludeXmlComments(filePath);
+        options.IncludeXmlComments(filePath);
     });
 
 var app = builder.Build();
@@ -56,7 +57,6 @@ if (app.Environment.IsDevelopment())
 
 app.ConfigureMiddlewares();
 
-app.UseSession();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -7,7 +7,8 @@ namespace __ProjectName__.Persistence
     {
         public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
         {
-            //TODO: inject repositories
+            var connectionString = configuration.GetConnectionString("{{ProjectName}}Db");
+            //__INJECT_SERVICES__
             return services;
         }
     }

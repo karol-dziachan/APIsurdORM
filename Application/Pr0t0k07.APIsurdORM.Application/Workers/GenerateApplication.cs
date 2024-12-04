@@ -133,10 +133,10 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
                     replaceDict["__Entities__"] = Regex.Replace(entityNameInPlural, @"[^\p{L}-\s]+", "");
 
                     var properties = entityClassName.Properties.Where(x => !x.Attributes.Any(x => x.AttributeName == "AutoNumerated"));
-                    replaceDict.Add("__ENTITY_PARAMETERS__", string.Join(", ", properties.Select(x => x.PropertyName)));
-                    replaceDict.Add("__ENTITY_VALUES__", string.Join(", ", properties.Select(x => $"@{x.PropertyName}")));
+                    replaceDict.Add("__ENTITY_PARAMETERS__", string.Join(", ", properties.Where(x => !x.Attributes.Any(x => x.AttributeName == "DefaultValue")).Select(x => x.PropertyName)));
+                    replaceDict.Add("__ENTITY_VALUES__", string.Join(", ", properties.Where(x => !x.Attributes.Any(x => x.AttributeName == "DefaultValue")).Select(x => $"@{x.PropertyName}")));
                     
-                    replaceDict.Add("//__ENTITY_PARAMETERS_MAPPING__", string.Join(", ", properties.Select(x => $"{x.PropertyName} = entity.{x.PropertyName}")));
+                    replaceDict.Add("//__ENTITY_PARAMETERS_MAPPING__", string.Join(", ", properties.Where(x => !x.Attributes.Any(x => x.AttributeName == "DefaultValue")).Select(x => $"{x.PropertyName} = entity.{x.PropertyName}")));
 
                     var relatedProperties = entityClassName.Properties.Where(x => x.Attributes.Any(x => x.AttributeName == "ForeignKey"));
                     if (!relatedProperties.Any())
@@ -151,6 +151,11 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
                     replaceDict.Add("__SET_PARAMETERS__", string.Join(", ", properties.Select(x => $"{x.PropertyName} = @{x.PropertyName}")));
                 }
+
+                replaceDict.Add("//__INJECT_SERVICES__", string.Join("\n", entitiesClasses.Select(x => $"services.AddScoped<I{x.ClassName}Repository>(provider => new {x.ClassName}Repository(connectionString));")));
+
+                replaceDict.Add("--__TABLES_DDL__", CreateDdlScript(entitiesClasses));
+
 
                 var sourceFilePath = GetSourceFileFormTemplatePath(path, replaceDict["__Entity__"], replaceDict["__Entities__"]);
 
@@ -168,6 +173,48 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
                 _fileService.EnsureIfFileExists(destPath);
                 _fileService.WriteToFile(destPath, sourceContennt);
             }
+        }
+
+        private string CreateDdlScript(List<ClassModel> entitiesClasses)
+        {
+            StringBuilder res = new StringBuilder();
+
+            foreach(var entity in entitiesClasses)
+            {
+                string sql = ReplacePatterns.DdlPattern.Replace("__TABLE_NAME__", entity.ClassName);
+                StringBuilder columns = new StringBuilder();
+                StringBuilder constrains = new StringBuilder(String.Empty);
+                string composite = String.Empty;
+                foreach(var property in entity.Properties)
+                {
+                    var identity = property.Attributes.Any(x => x.AttributeName == "AutoNumerated") ? "IDENTITY (1,1)" : String.Empty;
+                    var required = property.Attributes.Any(x => x.AttributeName == "RequiredProperty") ? "NOT NULL" : String.Empty;
+                    var primaryKey = property.Attributes.Any(x => x.AttributeName == "PrimaryKey") && !entity.Attributes.Any(x => x.AttributeName == "ManyToMany") ? "PRIMARY KEY" : String.Empty;
+                    var unique = property.Attributes.Any(x => x.AttributeName == "Unique") ? "UNIQUE" : String.Empty;
+                    var defaultValue = property.Attributes.FirstOrDefault(x => x.AttributeName == "DefaultValue")?.AttributeValues.FirstOrDefault() ?? String.Empty;
+                    var sqlType = property.Attributes.First(x => x.AttributeName == "SqlType").AttributeValues.First();
+
+                    var contraintsAttr = property.Attributes.FirstOrDefault(x => x.AttributeName == "ForeignKey")?.AttributeValues;
+
+
+                    string columnCommand = $"[{property.PropertyName}] {sqlType} {primaryKey} {required} {unique} {defaultValue} {identity},\n";
+                    if(contraintsAttr is not null && contraintsAttr.Any())
+                    {
+                        string constaintCommand = $"CONSTRAINT {contraintsAttr.First()}Fk FOREIGN KEY ([{property.PropertyName}]) REFERENCES [dbo].[{contraintsAttr.First()}] ([{contraintsAttr.Skip(1).First()}])\n";
+                        constrains.Append(constaintCommand);
+                    }
+                    columns.Append(columnCommand);
+                }
+
+                if (entity.Attributes.Any(x => x.AttributeName == "ManyToMany"))
+                {
+                    composite = $"CONSTRAINT {string.Join("_", entity.Properties.Where(x => x.Attributes.Any(y => y.AttributeName == "PrimaryKey")).Select(x => x.PropertyName))}Pk PRIMARY KEY ({string.Join(", ", entity.Properties.Where(x => x.Attributes.Any(y => y.AttributeName == "PrimaryKey")).Select(x => $"[{x.PropertyName}]"))}),";
+                }
+
+                res.Append(sql.Replace("__COLUMNS__", columns.ToString()).Replace("__CONSTAINTS__", constrains.ToString()).Replace("__COMPOSITE_KEY__", composite));
+            }
+
+            return res.ToString().Replace("\"", String.Empty);
         }
 
         private List<ClassModel> GetListOfEntites(IEnumerable<string> entitesPaths)
