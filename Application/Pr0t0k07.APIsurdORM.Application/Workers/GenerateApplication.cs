@@ -3,43 +3,26 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Pr0t0k07.APIsurdORM.Application.Shared.Models;
 using Pr0t0k07.APIsurdORM.Application.Shared;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
-using System;
 using System.Text;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
-using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.Extensions.Options;
 
 namespace Pr0t0k07.APIsurdORM.Application.Workers
 {
     public class GenerateApplication
     {
-        #region DEBUG
-        private readonly string TEMPLATES_PATH = "C:\\source\\APIsurdORM\\Templates";
-        private readonly string DESTINATION_PATH = @"C:\temp\generate";
-        private readonly string ENTITIES_DIR_PATH = @"C:\source\APIsurdORM\Examples\Pr0t0k07.APIsurdORM.Examples\Entities\";
-        private readonly string __PROJECT_NAME__ = "Pr0t0k07.GenerateExamples";
-        #endregion
-
         private readonly ILogger<GenerateApplication> _logger;
         private readonly IFileService _fileService;
         private readonly ISyntaxProvider _syntaxProvider;
-        private Dictionary<string, string> _replaceDict;
+        private readonly IOptionsSnapshot<Settings> _settings; 
 
-        public GenerateApplication(ILogger<GenerateApplication> logger, IFileService fileService, ISyntaxProvider syntaxProvider)
+        public GenerateApplication(ILogger<GenerateApplication> logger, IFileService fileService, ISyntaxProvider syntaxProvider, IOptionsSnapshot<Settings> settings)
         {
             _logger = logger ?? NullLogger<GenerateApplication>.Instance;
             _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
             _syntaxProvider = syntaxProvider ?? throw new ArgumentNullException(nameof(syntaxProvider));
-            _replaceDict = new Dictionary<string, string>()
-            {
-                {"__ProjectName__" , __PROJECT_NAME__ },
-                {"__Entity__" , "" },
-                {"__Entities__" , ""},
-            };
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));  
         }
 
         public async Task Handle()
@@ -49,8 +32,8 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
                 _logger.LogInformation("Start generating.");
                 _logger.LogInformation("Get files and directories from templates.");
 
-                var templates = _fileService.GetDirectoryResources(TEMPLATES_PATH, new List<string>() { @"\bin", @"\obj" });
-                var entities = _fileService.GetDirectoryResources(ENTITIES_DIR_PATH, new List<string>() { @"\bin", @"\obj" });
+                var templates = _fileService.GetDirectoryResources(_settings.Value.TemplatesPath, new List<string>() { @"\bin", @"\obj" });
+                var entities = _fileService.GetDirectoryResources(_settings.Value.EntitiesDirPath, new List<string>() { @"\bin", @"\obj" });
                
                 _logger.LogInformation("Succesfully get the templates.");
 
@@ -63,6 +46,8 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
                 _logger.LogInformation("Succesfully creating the templates.");
 
                 WriteTemplates(templates.Files, entities.Files, templates.Directories.FirstOrDefault(x => x.Contains(".Domain") && x.EndsWith("\\Entities")), entitiesClasses);
+
+                _logger.LogInformation("Succesfully writing content to the templates.");
             }
             catch (Exception ex)
             {
@@ -76,8 +61,8 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
         {
             Dictionary<string, string> replacePathsDict = new()
             {
-                    {$"{__PROJECT_NAME__}" , "{{ProjectName}}" },
-                    {DESTINATION_PATH, TEMPLATES_PATH }
+                    {$"{_settings.Value.ProjetName}" , "{{ProjectName}}" },
+                    {_settings.Value.DestinationPath, _settings.Value.TemplatesPath }
             };
 
             if (!string.IsNullOrEmpty(entityName)) 
@@ -116,8 +101,8 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
             {
                 Dictionary<string, string> replaceDict = new()
                 {
-                    {"__ProjectName__" , __PROJECT_NAME__ },
-                    {"{{ProjectName}}" , __PROJECT_NAME__ },
+                    {"__ProjectName__" , _settings.Value.ProjetName },
+                    {"{{ProjectName}}" , _settings.Value.ProjetName },
                     {"__Entity__" , $"" },
                     {"__Entities__" , $""},
                 };
@@ -130,7 +115,7 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
                     replaceDict["__Entity__"] = entityClassName.ClassName;
                     var entityNameInPlural = entityClassName.Attributes.FirstOrDefault(x => x.AttributeName == "PluralNameEntity")?.AttributeValues.FirstOrDefault()
                             ?? entityClassName.ClassName;
-                    replaceDict["__Entities__"] = Regex.Replace(entityNameInPlural, @"[^\p{L}-\s]+", "");
+                    replaceDict["__Entities__"] = Regex.Replace(entityNameInPlural, ReplacePatterns.NonAlphaNumericRegex, "");
 
                     var properties = entityClassName.Properties.Where(x => !x.Attributes.Any(x => x.AttributeName == "AutoNumerated"));
                     replaceDict.Add("__ENTITY_PARAMETERS__", string.Join(", ", properties.Where(x => !x.Attributes.Any(x => x.AttributeName == "DefaultValue")).Select(x => x.PropertyName)));
@@ -166,7 +151,7 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
 
             foreach(var path in entitiesPath)
             {
-                var destPath = path.Replace(ENTITIES_DIR_PATH, $"{entitiesDir}\\");
+                var destPath = path.Replace(_settings.Value.EntitiesDirPath, $"{entitiesDir}\\");
 
                 var sourceContennt = File.ReadAllText(path);
 
@@ -264,8 +249,7 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
                         var entityPlural = entityClassName.FirstOrDefault().Attributes.FirstOrDefault(x => x.AttributeName == "PluralNameEntity")?.AttributeValues.FirstOrDefault() 
                             ?? entityClassName.FirstOrDefault().ClassName;
 
-                        //TODO: abstract regex
-                        templates.Directories[i] = temp.Replace(ReplacePatterns.EntitiesPattern, Regex.Replace(entityPlural, @"[^\p{L}-\s]+", ""));
+                        templates.Directories[i] = temp.Replace(ReplacePatterns.EntitiesPattern, Regex.Replace(entityPlural, ReplacePatterns.NonAlphaNumericRegex, ""));
                     }
                 }
             }  
@@ -286,7 +270,7 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
                         var entityPlural = entityClassName.FirstOrDefault().Attributes.FirstOrDefault(x => x.AttributeName == "PluralNameEntity")?.AttributeValues.FirstOrDefault()
                             ?? entityClassName.FirstOrDefault().ClassName;
 
-                        templates.Files[i] = temp.Replace(ReplacePatterns.EntitiesPattern, Regex.Replace(entityPlural, @"[^\p{L}-\s]+", ""));
+                        templates.Files[i] = temp.Replace(ReplacePatterns.EntitiesPattern, Regex.Replace(entityPlural, ReplacePatterns.NonAlphaNumericRegex, ""));
                     }
                 }
             }
@@ -294,14 +278,14 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
         
         private void ReplaceProjectNameInFilePaths(DirectoryContentModel templates)
         {
-            ReplaceInList(templates.Directories, ReplacePatterns.ProjectNamePattern, __PROJECT_NAME__);
-            ReplaceInList(templates.Files, ReplacePatterns.ProjectNamePattern, __PROJECT_NAME__);
+            ReplaceInList(templates.Directories, ReplacePatterns.ProjectNamePattern, _settings.Value.ProjetName);
+            ReplaceInList(templates.Files, ReplacePatterns.ProjectNamePattern, _settings.Value.ProjetName);
         }        
         
         private void ReplacesDestinationPath(DirectoryContentModel templates)
         {
-            ReplaceInList(templates.Directories, TEMPLATES_PATH, DESTINATION_PATH);
-            ReplaceInList(templates.Files, TEMPLATES_PATH, DESTINATION_PATH);
+            ReplaceInList(templates.Directories, _settings.Value.TemplatesPath, _settings.Value.DestinationPath);
+            ReplaceInList(templates.Files, _settings.Value.TemplatesPath, _settings.Value.DestinationPath);
         }
 
         private void ReplaceEntityNameInFilePaths(DirectoryContentModel templates, List<string> entityNames)
@@ -315,7 +299,7 @@ namespace Pr0t0k07.APIsurdORM.Application.Workers
             var itemsWhichContainsPattern = toReplaceList.Where(x => x.Contains(replacePattern)); 
             var tempList = toReplaceList.Where(x => !x.Contains(replacePattern)).ToList(); 
 
-            var replacedItems = itemsWhichContainsPattern.SelectMany(dir => newValues.Select(newVal => dir.Replace(replacePattern, newVal))); //n^2
+            var replacedItems = itemsWhichContainsPattern.SelectMany(dir => newValues.Select(newVal => dir.Replace(replacePattern, newVal))); 
             tempList = tempList.Concat(replacedItems).ToList(); 
 
             toReplaceList.Clear();

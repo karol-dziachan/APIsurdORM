@@ -10,6 +10,8 @@
         public static string ContentEntityPattern = "__Entity__";
         public static string ContentEntitiesPattern = "__Entities__";
 
+        public static string NonAlphaNumericRegex = @"[^\p{L}-\s]+";
+
         public static string DdlPattern = @"
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE NAME = '__TABLE_NAME__' AND xtype='U')
 	CREATE TABLE [dbo].[__TABLE_NAME__]
